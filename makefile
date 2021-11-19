@@ -9,7 +9,7 @@ CFLAGS = -c
 # DBGFLAGS = -g -D_DEBUG_ON_
 # OPTFLAGS = -O3
 
-all	: server client
+all	: server
 	@echo -n ""
 
 # optimized version
