@@ -6,7 +6,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 
-#define DOMAIN AF_INET
+#define DOMAIN AF_LOCAL
 #define TYPE SOCK_STREAM
 #define PROTOCOL 0
 

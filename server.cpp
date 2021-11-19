@@ -5,7 +5,7 @@
 #include <cstring>
 #include <iostream>
 
-#define DOMAIN AF_INET
+#define DOMAIN AF_LOCAL
 #define TYPE SOCK_STREAM
 #define PROTOCOL 0
 
