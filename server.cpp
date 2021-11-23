@@ -4,8 +4,9 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
+#include <errno.h>
 
-#define DOMAIN AF_LOCAL
+#define DOMAIN AF_INET
 #define TYPE SOCK_STREAM
 #define PROTOCOL 0
 
@@ -18,9 +19,12 @@ int main(int argc, char** argv){
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = DOMAIN;
-    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(port);
+    // cout << bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) << endl;
     bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
+    // cout << errno << endl;
+    // cout << listen(server_fd, 10) << endl;
     listen(server_fd, 10);
     while(true){
         int child_fd = accept(server_fd, (struct sockaddr*)NULL, (socklen_t*)NULL);
