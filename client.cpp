@@ -15,7 +15,7 @@ using namespace std;
 int main(int argc, char** argv){
     char buffer[512];
     int client_fd = socket(DOMAIN, TYPE, PROTOCOL);
-    int port = *argv[2];
+    int port = atoi(argv[2]);
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = DOMAIN;
