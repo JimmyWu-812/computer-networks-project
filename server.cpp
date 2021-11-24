@@ -14,17 +14,13 @@
 #define PROTOCOL 0
 #define BUF_SIZE 512
 #define MAX_NUM_OF_CLIENTS 10
-#define TRUE   1 
-#define FALSE  0 
 
 using namespace std;
      
-int main(int argc , char** argv)  
-{  
-    int opt = TRUE;  
+int main(int argc , char** argv){  
+    int opt = true;  
     int main_socket, addr_length, new_socket, client_socket[MAX_NUM_OF_CLIENTS] = {0};
-    int activity, i, valread, sd;  
-    int max_sd;  
+    int i, sd, max_sd;  
     int port = atoi(argv[1]);
     char buffer[BUF_SIZE];
     struct sockaddr_in address;  
@@ -32,142 +28,80 @@ int main(int argc , char** argv)
     //set of socket descriptors 
     fd_set readfds;
          
-    //create a master socket 
-    if( (main_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)  
-    {  
-        perror("socket failed");  
-        exit(EXIT_FAILURE);  
-    }  
+    //create a main socket 
+    main_socket = socket(AF_INET , SOCK_STREAM , PROTOCOL);
      
-    //set master socket to allow multiple connections , 
+    //set main socket to allow multiple connections , 
     //this is just a good habit, it will work without this 
-    if( setsockopt(main_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, 
-          sizeof(opt)) < 0 )  
-    {  
-        perror("setsockopt");  
-        exit(EXIT_FAILURE);  
-    }  
+    setsockopt(main_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
      
     //type of socket created 
     address.sin_family = AF_INET;  
     address.sin_addr.s_addr = INADDR_ANY;  
-    address.sin_port = htons( port );  
+    address.sin_port = htons(port);
+
+    addr_length = sizeof(address);  
          
-    //bind the socket to localhost port 8888 
-    if (bind(main_socket, (struct sockaddr *)&address, sizeof(address))<0)  
-    {  
-        perror("bind failed");  
-        exit(EXIT_FAILURE);  
-    }  
-    cout << "Listener on port " << port << endl;  
+    //bind the socket to localhost port
+    bind(main_socket, (struct sockaddr *)&address, addr_length);
          
     //try to specify maximum of 3 pending connections for the master socket 
-    if (listen(main_socket, 3) < 0)  
-    {  
-        perror("listen");  
-        exit(EXIT_FAILURE);  
-    }  
-         
-    //accept the incoming connection 
-    addr_length = sizeof(address);  
-    puts("Waiting for connections ...");  
-         
-    while(TRUE)  
-    {  
-        //clear the socket set 
+    listen(main_socket, 3);
+
+    while(true){  
+        //clear the socket set
         FD_ZERO(&readfds);  
      
-        //add master socket to set 
+        //add main socket to set 
         FD_SET(main_socket, &readfds);  
         max_sd = main_socket;  
              
         //add child sockets to set 
-        for ( i = 0 ; i < MAX_NUM_OF_CLIENTS ; i++)  
-        {  
+        for(i=0; i<MAX_NUM_OF_CLIENTS; i++){  
             //socket descriptor 
             sd = client_socket[i];  
-                 
             //if valid socket descriptor then add to read list 
-            if(sd > 0)  
-                FD_SET( sd , &readfds);  
-                 
+            if(sd > 0){
+                FD_SET(sd, &readfds);
+            }
             //highest file descriptor number, need it for the select function 
             if(sd > max_sd)  
                 max_sd = sd;  
-        }  
+        }
      
         //wait for an activity on one of the sockets , timeout is NULL , 
         //so wait indefinitely 
-        activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);  
-       
-        if ((activity < 0) && (errno!=EINTR))  
-        {  
-            printf("select error");  
-        }  
-             
+        select(max_sd + 1, &readfds, NULL, NULL, NULL);
+
         //If something happened on the master socket , 
         //then its an incoming connection 
-        if (FD_ISSET(main_socket, &readfds))  
-        {  
-            if ((new_socket = accept(main_socket, 
-                    (struct sockaddr *)&address, (socklen_t*)&addr_length))<0)  
-            {  
-                perror("accept");  
-                exit(EXIT_FAILURE);  
-            }  
-             
-            //inform user of socket number - used in send and receive commands 
-            printf("New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs
-                  (address.sin_port));  
-            
+        if(FD_ISSET(main_socket, &readfds)){  
+            new_socket = accept(main_socket, (struct sockaddr*)&address, (socklen_t*)&addr_length);
             //add new socket to array of sockets 
-            for (i = 0; i < MAX_NUM_OF_CLIENTS; i++)  
-            {  
+            for(i=0; i<MAX_NUM_OF_CLIENTS; i++){  
                 //if position is empty 
-                if( client_socket[i] == 0 )  
-                {  
+                if(client_socket[i] == 0){  
                     client_socket[i] = new_socket;  
-                    printf("Adding to list of sockets as %d\n" , i);  
-                         
                     break;  
                 }  
             }
         }  
-             
+
         //else its some IO operation on some other socket
-        for (i = 0; i < MAX_NUM_OF_CLIENTS; i++)  
-        {  
+        for(i=0; i< MAX_NUM_OF_CLIENTS; i++){  
             sd = client_socket[i];  
-                 
-            if (FD_ISSET( sd , &readfds))  
-            {  
-                //Check if it was for closing , and also read the 
-                //incoming message 
-                if ((valread = read( sd , buffer, 1024)) == 0)  
-                {  
-                    //Somebody disconnected , get his details and print 
-                    getpeername(sd , (struct sockaddr*)&address , \
-                        (socklen_t*)&addr_length);  
-                    printf("Host disconnected , ip %s , port %d \n" , 
-                          inet_ntoa(address.sin_addr) , ntohs(address.sin_port));  
-                         
-                    //Close the socket and mark as 0 in list for reuse 
-                    close( sd );  
+            if(FD_ISSET(sd ,&readfds)){  
+                //Check if it was for closing, and also read the incoming message
+                if(read(sd, buffer, BUF_SIZE) < 0){  
+                    //Close the socket and mark as 0 in list for reuse
+                    close(sd);  
                     client_socket[i] = 0;  
                 }  
-                     
-                //Echo back the message that came in 
-                else 
-                {  
-                    //set the string terminating NULL byte on the end 
-                    //of the data read 
+                else{
                     cout << buffer << endl;
-                    buffer[valread] = '\0';  
-                    send(sd , buffer , strlen(buffer) , 0 );  
                 }  
             }  
-        }  
-    }  
-         
+        }
+    }
     return 0;  
 }  
