@@ -4,4 +4,5 @@ server
 *.o
 test.cpp
 test.txt
+test2.txt
 *.mp4
