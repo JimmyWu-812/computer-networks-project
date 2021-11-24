@@ -13,6 +13,7 @@
 #define TYPE SOCK_STREAM
 #define PROTOCOL 0
 #define BUF_SIZE 512
+#define MAX_NUM_OF_CLIENTS 10
 #define TRUE   1 
 #define FALSE  0 
 
@@ -21,27 +22,18 @@ using namespace std;
 int main(int argc , char** argv)  
 {  
     int opt = TRUE;  
-    int master_socket , addrlen , new_socket , client_socket[30] , 
-          max_clients = 30 , activity, i , valread , sd;  
+    int main_socket, addr_length, new_socket, client_socket[MAX_NUM_OF_CLIENTS] = {0};
+    int activity, i, valread, sd;  
     int max_sd;  
     int port = atoi(argv[1]);
     char buffer[BUF_SIZE];
     struct sockaddr_in address;  
          
     //set of socket descriptors 
-    fd_set readfds;  
-         
-    //a message 
-    char *message = "ECHO Daemon v1.0 \r\n";  
-     
-    //initialise all client_socket[] to 0 so not checked 
-    for (i = 0; i < max_clients; i++)  
-    {  
-        client_socket[i] = 0;  
-    }  
+    fd_set readfds;
          
     //create a master socket 
-    if( (master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)  
+    if( (main_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)  
     {  
         perror("socket failed");  
         exit(EXIT_FAILURE);  
@@ -49,7 +41,7 @@ int main(int argc , char** argv)
      
     //set master socket to allow multiple connections , 
     //this is just a good habit, it will work without this 
-    if( setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, 
+    if( setsockopt(main_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, 
           sizeof(opt)) < 0 )  
     {  
         perror("setsockopt");  
@@ -62,7 +54,7 @@ int main(int argc , char** argv)
     address.sin_port = htons( port );  
          
     //bind the socket to localhost port 8888 
-    if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)  
+    if (bind(main_socket, (struct sockaddr *)&address, sizeof(address))<0)  
     {  
         perror("bind failed");  
         exit(EXIT_FAILURE);  
@@ -70,14 +62,14 @@ int main(int argc , char** argv)
     cout << "Listener on port " << port << endl;  
          
     //try to specify maximum of 3 pending connections for the master socket 
-    if (listen(master_socket, 3) < 0)  
+    if (listen(main_socket, 3) < 0)  
     {  
         perror("listen");  
         exit(EXIT_FAILURE);  
     }  
          
     //accept the incoming connection 
-    addrlen = sizeof(address);  
+    addr_length = sizeof(address);  
     puts("Waiting for connections ...");  
          
     while(TRUE)  
@@ -86,11 +78,11 @@ int main(int argc , char** argv)
         FD_ZERO(&readfds);  
      
         //add master socket to set 
-        FD_SET(master_socket, &readfds);  
-        max_sd = master_socket;  
+        FD_SET(main_socket, &readfds);  
+        max_sd = main_socket;  
              
         //add child sockets to set 
-        for ( i = 0 ; i < max_clients ; i++)  
+        for ( i = 0 ; i < MAX_NUM_OF_CLIENTS ; i++)  
         {  
             //socket descriptor 
             sd = client_socket[i];  
@@ -115,10 +107,10 @@ int main(int argc , char** argv)
              
         //If something happened on the master socket , 
         //then its an incoming connection 
-        if (FD_ISSET(master_socket, &readfds))  
+        if (FD_ISSET(main_socket, &readfds))  
         {  
-            if ((new_socket = accept(master_socket, 
-                    (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)  
+            if ((new_socket = accept(main_socket, 
+                    (struct sockaddr *)&address, (socklen_t*)&addr_length))<0)  
             {  
                 perror("accept");  
                 exit(EXIT_FAILURE);  
@@ -127,17 +119,9 @@ int main(int argc , char** argv)
             //inform user of socket number - used in send and receive commands 
             printf("New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs
                   (address.sin_port));  
-           
-            //send new connection greeting message 
-            if( send(new_socket, message, strlen(message), 0) != strlen(message) )  
-            {  
-                perror("send");  
-            }  
-                 
-            puts("Welcome message sent successfully");  
-
+            
             //add new socket to array of sockets 
-            for (i = 0; i < max_clients; i++)  
+            for (i = 0; i < MAX_NUM_OF_CLIENTS; i++)  
             {  
                 //if position is empty 
                 if( client_socket[i] == 0 )  
@@ -151,7 +135,7 @@ int main(int argc , char** argv)
         }  
              
         //else its some IO operation on some other socket
-        for (i = 0; i < max_clients; i++)  
+        for (i = 0; i < MAX_NUM_OF_CLIENTS; i++)  
         {  
             sd = client_socket[i];  
                  
@@ -163,7 +147,7 @@ int main(int argc , char** argv)
                 {  
                     //Somebody disconnected , get his details and print 
                     getpeername(sd , (struct sockaddr*)&address , \
-                        (socklen_t*)&addrlen);  
+                        (socklen_t*)&addr_length);  
                     printf("Host disconnected , ip %s , port %d \n" , 
                           inet_ntoa(address.sin_addr) , ntohs(address.sin_port));  
                          
