@@ -3,3 +3,5 @@ client
 server
 *.o
 test.cpp
+test.txt
+*.mp4
