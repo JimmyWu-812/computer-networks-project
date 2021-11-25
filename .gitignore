@@ -1,8 +1,7 @@
 .vscode
 client
 server
+client_dir
+server_dir
 *.o
-test.cpp
-test.txt
-test2.txt
-*.mp4
+*.txt

@@ -1,5 +1,6 @@
 # CC and CFLAGS are varilables
 CC = g++
+VERSION = -std=c++17
 CFLAGS = -c
 # AR = ar
 # ARFLAGS = rcv
@@ -17,11 +18,14 @@ server			: server.o
 			$(CC) $< -o $@
 client			: client.o
 			$(CC) $< -o $@
-server.o 	   	: server.cpp
-			$(CC) $(CFLAGS) $< -o $@
-client.o 	   	: client.cpp
-			$(CC) $(CFLAGS) $< -o $@
+server.o 	   	: server.cpp util.cpp
+			$(CC) $(VERSION) $(CFLAGS) $< -o $@
+client.o 	   	: client.cpp util.cpp
+			$(CC) $(VERSION) $(CFLAGS) $< -o $@
 
 # clean all the .o and executable files
 clean:
-		rm -rf *.o server client
+		rm -rf *.o server client client_dir/* server_dir/*
+
+clean_all:
+		rm -rf *.o server client client_dir server_dir
