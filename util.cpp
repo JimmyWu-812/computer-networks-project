@@ -80,12 +80,25 @@ void receive_command(int* child_socket, fd_set readfds, char* buffer){
             }
             else{
                 command = buffer;
-                cout << command.substr(0, command.find(' ')) << endl;
+                handle_command(command);
             }
         }  
     }
 }
 
-void handle_command(){
+void handle_command(string& command){
+    int space_position = command.find(' ');
+    string operation = command.substr(0, space_position);
+    if(operation == "ls"){
+        
+    }
+    else if(operation == "put"){
 
+    }
+    else if(operation == "get"){
+
+    }
+    else{
+        cout << "Command not found" << endl;
+    }
 }

@@ -3,5 +3,8 @@ client
 server
 client_dir
 server_dir
+transfer
 *.o
 *.txt
+client_2.cpp
+server_2.cpp

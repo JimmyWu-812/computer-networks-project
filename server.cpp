@@ -27,8 +27,6 @@ int main(int argc , char** argv){
 
         receive_command(child_socket, readfds, buffer);
 
-        handle_command();
-
         handle_put();
     }
     return 0;  
