@@ -18,6 +18,7 @@
 #define MAX_NUM_OF_CLIENTS 10
 
 using namespace std;
+using namespace filesystem;
 
 struct sockaddr_in destination_setup(const int& flag, char* ip_address, int& port){
     int addr_length;
@@ -50,55 +51,16 @@ int FD_setup(int& main_socket, int* child_socket, fd_set& readfds){
     return fd_max;
 }
 
-void check_new_connection(int& main_socket, int* child_socket, fd_set& readfds, struct sockaddr_in& address, int& addr_length){
+void check_new_client(int& main_socket, int* child_socket, fd_set& readfds, struct sockaddr_in& address, int& addr_length){
     int new_socket;
     if(FD_ISSET(main_socket, &readfds)){  
         new_socket = accept(main_socket, (struct sockaddr*)&address, (socklen_t*)&addr_length);
+        // cout << "new_socket: " << new_socket << endl;
         for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){  
             if(child_socket[i] == 0){  
                 child_socket[i] = new_socket;  
                 break;  
             }  
         }
-    }
-}
-
-void handle_put(){
-    
-}
-
-void receive_command(int* child_socket, fd_set readfds, char* buffer){
-    int fd, length;
-    string command;
-    for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){  
-        fd = child_socket[i];
-        if(FD_ISSET(fd, &readfds)){
-            memset(buffer, '\0', BUF_SIZE);
-            if(recv(fd, buffer, BUF_SIZE, 0) <= 0){  
-                close(fd);
-                child_socket[i] = 0;
-            }
-            else{
-                command = buffer;
-                handle_command(command);
-            }
-        }  
-    }
-}
-
-void handle_command(string& command){
-    int space_position = command.find(' ');
-    string operation = command.substr(0, space_position);
-    if(operation == "ls"){
-        
-    }
-    else if(operation == "put"){
-
-    }
-    else if(operation == "get"){
-
-    }
-    else{
-        cout << "Command not found" << endl;
     }
 }

@@ -5,8 +5,10 @@ int main(int argc, char** argv){
     char *ip_address;
     const char* delimiter = ":";
     int addr_length, i, port, client_socket;
-    ifstream file;
-    string operation;
+    fstream file;
+    string operation, username;
+
+    create_directory("client_dir");
     
     client_socket = socket(DOMAIN, TYPE, PROTOCOL);
 
@@ -17,6 +19,25 @@ int main(int argc, char** argv){
     addr_length = sizeof(address);
 
     connect(client_socket, (struct sockaddr*)&address, addr_length);
+
+    cout << "input your username:" << endl;
+    while(true){
+		memset(buffer, '\0', BUF_SIZE);
+
+        cin >> username;
+        username = "usr " + username;
+        send(client_socket, username.c_str(), username.size(), 0);
+
+        recv(client_socket, buffer, BUF_SIZE, 0);
+
+        if(buffer[0] == '0'){
+            cout << "username is in used, please try another:" << endl;
+        }
+        else{
+            cout << "connect successfully" << endl;
+            break;
+        }
+    }
 
     while(true){
         getline(cin, operation);

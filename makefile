@@ -22,10 +22,7 @@ server.o 	   	: server.cpp util.cpp
 			$(CC) $(VERSION) $(CFLAGS) $< -o $@
 client.o 	   	: client.cpp util.cpp
 			$(CC) $(VERSION) $(CFLAGS) $< -o $@
-
-# clean all the .o and executable files
-clean:
-		rm -rf *.o server client client_dir/* server_dir/*
-
-clean_all:
+erase:
 		rm -rf *.o server client client_dir server_dir
+delete:
+		rm -rf *.o server client
