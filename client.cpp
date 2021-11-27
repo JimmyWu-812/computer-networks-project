@@ -6,9 +6,9 @@ int main(int argc, char** argv){
     char *ip_address;
     const char* delimiter = ":";
 
-    int addr_length, i, port, client_socket, space_pos;
+    int addr_length, i, port, client_socket, space_pos, bytes_read;
 
-    string operation, username, command, dir_name = "client_dir";
+    string operation, argument, command, dir_name = "client_dir";
 
     fstream file;
 
@@ -30,11 +30,11 @@ int main(int argc, char** argv){
     while(true){
 		clear_buffer(buffer);
 
-        getline(cin, username);
-        // cout << "username: " << username << endl;
+        getline(cin, argument);
+        // cout << "argument: " << argument << endl;
 
         send(client_socket, "usr", BUF_SIZE, 0);
-        send(client_socket, username.c_str(), BUF_SIZE, 0);
+        send(client_socket, argument.c_str(), BUF_SIZE, 0);
 
         recv(client_socket, buffer, BUF_SIZE, 0);
         // cout << "buffer in usr: " << buffer << endl;
@@ -58,14 +58,44 @@ int main(int argc, char** argv){
         space_pos = operation.find(" ");
         command = operation.substr(0, space_pos);
         // cout << "command: " << command << endl;
-        
-        send(client_socket, command.c_str(), command.size(), 0);
 
         if(command == "ls"){
             if(space_pos == string::npos){
-                // cout << "I'm ls" << endl;
+                // cout << "Hi, I'm ls" << endl;
+                send(client_socket, command.c_str(), BUF_SIZE, 0);
                 recv(client_socket, buffer, BUF_SIZE, 0);
                 cout << buffer;
+            }
+            else{
+                cout << "Command format error" << endl;
+            }
+        }
+        else if(command == "put"){
+            argument = operation.substr(space_pos + 1);
+            // cout << "argument: " << argument << endl;
+            space_pos = argument.find(" ");
+
+            if(space_pos == string::npos){
+                // cout << "Hi, I'm put" << endl;
+                send(client_socket, argument.c_str(), BUF_SIZE, 0);
+                file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
+                // cout << file.is_open() << endl;
+
+                while(file.peek() != EOF){
+                    file.read(buffer, BUF_SIZE);
+                    // cout << buffer << endl;
+                    // cout << "gcount: " << file.gcount() << endl;
+                    bytes_read = file.gcount();
+
+                    send(client_socket, to_string(bytes_read).c_str(), BUF_SIZE, 0);
+                    send(client_socket, buffer, BUF_SIZE, 0);
+
+                    clear_buffer(buffer);
+                }
+                file.close();
+
+                recv(client_socket, buffer, BUF_SIZE, 0);
+                cout << buffer << endl;
             }
             else{
                 cout << "Command format error" << endl;

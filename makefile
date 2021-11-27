@@ -9,10 +9,6 @@ server			: server.o
 			$(CC) $< -o $@
 client			: client.o
 			$(CC) $< -o $@
-# server.o 	   	: server_2.cpp
-# 			$(CC) $(CVERSION) $(CFLAGS) $< -o $@
-# client.o 	   	: client_2.cpp
-# 			$(CC) $(CVERSION) $(CFLAGS) $< -o $@
 server.o 	   	: server.cpp util.cpp
 			$(CC) $(CVERSION) $(CFLAGS) $< -o $@
 client.o 	   	: client.cpp util.cpp

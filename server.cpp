@@ -2,16 +2,23 @@
 #include <set>
 
 int main(int argc , char** argv){
+    /* declaration */
     bool flag;
+
     int option = true, main_socket, addr_length, new_socket;
     int child_socket[MAX_NUM_OF_CLIENTS] = {0};
     int fd_max, port = atoi(argv[1]);
+
     char** buffer = new char*[MAX_NUM_OF_CLIENTS];
     for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){
         buffer[i] = new char[BUF_SIZE];
     }
+
     string command, argument, username[MAX_NUM_OF_CLIENTS] = {""};
     string dir_name = "server_dir";
+
+    set<path> filenames;
+
     const path root_dir{dir_name};
     fd_set readfds;
 
@@ -27,6 +34,11 @@ int main(int argc , char** argv){
     bind(main_socket, (struct sockaddr *)&address, addr_length);
          
     listen(main_socket, MAX_NUM_OF_CLIENTS);
+
+    for(const auto& entry : directory_iterator(root_dir)){
+        // cout << entry.path().filename() << endl;
+        filenames.insert(entry.path().filename());
+    }
 
     while(true){
         fd_max = FD_setup(main_socket, child_socket, readfds);
@@ -77,15 +89,15 @@ int main(int argc , char** argv){
                     }
                     else if(command == "ls"){
                         clear_buffer(buffer[i]);
-                        for (const auto& entry : directory_iterator(root_dir)){
-                            strcat(buffer[i], entry.path().filename().c_str());
+                        for (auto it=filenames.begin(); it!=filenames.end(); ++it){
+                            strcat(buffer[i], it->c_str());
                             strcat(buffer[i], "\n");
                         }
                         // cout << "buffer in ls: " << buffer[i];
                         send(child_socket[i], buffer[i], BUF_SIZE, 0);
                     }
                     else if(command == "put"){
-
+                        
                     }
                     else if(command == "get"){
 
