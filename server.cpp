@@ -15,7 +15,7 @@ int main(int argc , char** argv){
     const path root_dir{dir_name};
     fd_set readfds;
 
-    create_directory("server_dir");
+    create_directory(dir_name);
          
     main_socket = socket(DOMAIN, TYPE, PROTOCOL);
      
@@ -59,7 +59,7 @@ int main(int argc , char** argv){
 
                     if(command == "usr"){
                         recv(child_socket[i], buffer[i], BUF_SIZE, 0);
-                        // cout << "argument: " << argument << endl;
+                        // cout << "buffer in usr: " << buffer[i] << endl;
                         flag = true;
                         for(int j=0; j<MAX_NUM_OF_CLIENTS; j++){
                             if(strcmp(username[j].c_str(), buffer[i]) == 0){
@@ -69,7 +69,7 @@ int main(int argc , char** argv){
                             }
                         }
                         if(flag){
-                            username[i] = argument;
+                            username[i] = buffer[i];
                             // cout << "connect successfully: ";
                             // cout << child_socket[i] << " " << username[i] << endl;
                             send(child_socket[i], "1", BUF_SIZE, 0);

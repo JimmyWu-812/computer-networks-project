@@ -1,18 +1,19 @@
 #include "util.cpp"
-#include <iostream>
-#include <fstream>
 
 int main(int argc, char** argv){
     /* declaration */
     char buffer[BUF_SIZE], ch;
     char *ip_address;
     const char* delimiter = ":";
+
     int addr_length, i, port, client_socket, space_pos;
+
+    string operation, username, command, dir_name = "client_dir";
+
     fstream file;
-    string operation, username, command;
 
     /* pre-processing */
-    create_directory("client_dir");
+    create_directory(dir_name);
     
     client_socket = socket(DOMAIN, TYPE, PROTOCOL);
 
@@ -30,6 +31,8 @@ int main(int argc, char** argv){
 		clear_buffer(buffer);
 
         getline(cin, username);
+        // cout << "username: " << username << endl;
+
         send(client_socket, "usr", BUF_SIZE, 0);
         send(client_socket, username.c_str(), BUF_SIZE, 0);
 
