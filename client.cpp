@@ -77,25 +77,30 @@ int main(int argc, char** argv){
 
             if(space_pos == string::npos){
                 // cout << "Hi, I'm put" << endl;
-                send(client_socket, argument.c_str(), BUF_SIZE, 0);
                 file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
-                // cout << file.is_open() << endl;
 
-                while(file.peek() != EOF){
-                    file.read(buffer, BUF_SIZE);
-                    // cout << buffer << endl;
-                    // cout << "gcount: " << file.gcount() << endl;
-                    bytes_read = file.gcount();
+                if(file.is_open()){
+                    send(client_socket, argument.c_str(), BUF_SIZE, 0);
+                    
+                    while(file.peek() != EOF){
+                        file.read(buffer, BUF_SIZE);
+                        // cout << buffer << endl;
+                        // cout << "gcount: " << file.gcount() << endl;
+                        bytes_read = file.gcount();
 
-                    send(client_socket, to_string(bytes_read).c_str(), BUF_SIZE, 0);
-                    send(client_socket, buffer, BUF_SIZE, 0);
+                        send(client_socket, to_string(bytes_read).c_str(), BUF_SIZE, 0);
+                        send(client_socket, buffer, BUF_SIZE, 0);
 
-                    clear_buffer(buffer);
+                        clear_buffer(buffer);
+                    }
+                    file.close();
+
+                    recv(client_socket, buffer, BUF_SIZE, 0);
+                    cout << buffer << endl;
                 }
-                file.close();
-
-                recv(client_socket, buffer, BUF_SIZE, 0);
-                cout << buffer << endl;
+                else{
+                    cout << "The " << argument << " doesn’t exist" << endl;
+                }
             }
             else{
                 cout << "Command format error" << endl;
