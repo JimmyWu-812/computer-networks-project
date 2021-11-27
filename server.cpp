@@ -1,15 +1,18 @@
 #include "util.cpp"
+#include <set>
 
 int main(int argc , char** argv){
     bool flag;
     int option = true, main_socket, addr_length, new_socket;
     int child_socket[MAX_NUM_OF_CLIENTS] = {0};
-    int fd_max, port = atoi(argv[1]), space_pos;
+    int fd_max, port = atoi(argv[1]);
     char** buffer = new char*[MAX_NUM_OF_CLIENTS];
     for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){
         buffer[i] = new char[BUF_SIZE];
     }
-    string operation, command, argument, username[MAX_NUM_OF_CLIENTS] = {""};
+    string command, argument, username[MAX_NUM_OF_CLIENTS] = {""};
+    string dir_name = "server_dir";
+    const path root_dir{dir_name};
     fd_set readfds;
 
     create_directory("server_dir");
@@ -23,18 +26,27 @@ int main(int argc , char** argv){
          
     bind(main_socket, (struct sockaddr *)&address, addr_length);
          
-    listen(main_socket, 3);
+    listen(main_socket, MAX_NUM_OF_CLIENTS);
 
     while(true){
         fd_max = FD_setup(main_socket, child_socket, readfds);
      
         select(fd_max + 1, &readfds, NULL, NULL, 0);
 
-        check_new_client(main_socket, child_socket, readfds, address, addr_length);
+        if(FD_ISSET(main_socket, &readfds)){  
+            new_socket = accept(main_socket, (struct sockaddr*)&address, (socklen_t*)&addr_length);
+            // cout << "new_socket: " << new_socket << endl;
+            for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){  
+                if(child_socket[i] == 0){  
+                    child_socket[i] = new_socket;  
+                    break;  
+                }  
+            }
+        }
 
         for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){
             if(FD_ISSET(child_socket[i], &readfds)){
-                memset(buffer[i], '\0', BUF_SIZE);
+                clear_buffer(buffer[i]);
 
                 if(recv(child_socket[i], buffer[i], BUF_SIZE, 0) <= 0){
                     close(child_socket[i]);
@@ -42,14 +54,11 @@ int main(int argc , char** argv){
                     username[i] = "";
                 }
                 else{
-                    operation = buffer[i];
-                    // cout << "operation: " << operation << endl;
-                    space_pos = operation.find(" ");
-                    command = operation.substr(0, space_pos);
+                    command = buffer[i];
                     // cout << "command: " << command << endl;
 
                     if(command == "usr"){
-                        argument = operation.substr(space_pos + 1);
+                        recv(child_socket[i], buffer[i], BUF_SIZE, 0);
                         // cout << "argument: " << argument << endl;
                         flag = true;
                         for(int j=0; j<MAX_NUM_OF_CLIENTS; j++){
@@ -60,27 +69,26 @@ int main(int argc , char** argv){
                             }
                         }
                         if(flag){
-                            username[i] = buffer[i];
+                            username[i] = argument;
+                            // cout << "connect successfully: ";
+                            // cout << child_socket[i] << " " << username[i] << endl;
                             send(child_socket[i], "1", BUF_SIZE, 0);
                         }
                     }
-                    else if(operation == "ls"){
-                        if(space_pos != string::npos){
-                            cout << "Command format error" << endl;
-                            continue;
+                    else if(command == "ls"){
+                        clear_buffer(buffer[i]);
+                        for (const auto& entry : directory_iterator(root_dir)){
+                            strcat(buffer[i], entry.path().filename().c_str());
+                            strcat(buffer[i], "\n");
                         }
-                        for (const auto & entry : directory_iterator("server_dir")){
-                            std::cout << entry.path() << std::endl;
-                        }
+                        // cout << "buffer in ls: " << buffer[i];
+                        send(child_socket[i], buffer[i], BUF_SIZE, 0);
                     }
-                    else if(operation == "put"){
+                    else if(command == "put"){
 
                     }
-                    else if(operation == "get"){
+                    else if(command == "get"){
 
-                    }
-                    else{
-                        cout << "Command not found" << endl;
                     }
                 }
             }  

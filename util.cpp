@@ -1,14 +1,12 @@
-#include <iostream>
-#include <fstream>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <cstring>
+// #include <stdlib.h>
+// #include <errno.h>
 #include <unistd.h>
-#include <netinet/in.h>
+// #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <sys/time.h>
 #include <filesystem>
      
 #define DOMAIN AF_INET
@@ -51,16 +49,6 @@ int FD_setup(int& main_socket, int* child_socket, fd_set& readfds){
     return fd_max;
 }
 
-void check_new_client(int& main_socket, int* child_socket, fd_set& readfds, struct sockaddr_in& address, int& addr_length){
-    int new_socket;
-    if(FD_ISSET(main_socket, &readfds)){  
-        new_socket = accept(main_socket, (struct sockaddr*)&address, (socklen_t*)&addr_length);
-        // cout << "new_socket: " << new_socket << endl;
-        for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){  
-            if(child_socket[i] == 0){  
-                child_socket[i] = new_socket;  
-                break;  
-            }  
-        }
-    }
+void clear_buffer(char* buffer){
+	memset(buffer, '\0', BUF_SIZE);
 }
