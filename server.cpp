@@ -7,8 +7,8 @@ int main(int argc , char** argv){
 
     int option = true, main_socket, addr_length, new_socket;
     int child_socket[MAX_NUM_OF_CLIENTS] = {0};
-    int file_reading_pos[MAX_NUM_OF_CLIENTS] = {0};
-    int size_of_file[MAX_NUM_OF_CLIENTS] = {0};
+    unsigned long long int file_reading_pos[MAX_NUM_OF_CLIENTS] = {0};
+    unsigned long long int size_of_file[MAX_NUM_OF_CLIENTS] = {0};
     int fd_max, port = atoi(argv[1]), bytes_read;
 
     char buffer[BUF_SIZE];

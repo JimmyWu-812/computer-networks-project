@@ -142,7 +142,7 @@ int main(int argc, char** argv){
 
                     current_bytes = 0;
                     while(current_bytes != size_of_file){
-                        cout << "current bytes: " << current_bytes << endl;
+                        // cout << "current bytes: " << current_bytes << endl;
                         send(client_socket, command.c_str(), BUF_SIZE, 0);
                         send(client_socket, argument.c_str(), BUF_SIZE, 0);
 
