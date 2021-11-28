@@ -102,6 +102,7 @@ int main(int argc, char** argv){
                     
                     strcat(buffer, "eof");
                     send(client_socket, buffer, BUF_SIZE, 0);
+                    clear_buffer(buffer);
                     send(client_socket, argument.c_str(), BUF_SIZE, 0);
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     cout << buffer << endl;

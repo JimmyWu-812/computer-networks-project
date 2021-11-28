@@ -14,7 +14,7 @@
 #define DOMAIN AF_INET
 #define TYPE SOCK_STREAM
 #define PROTOCOL 0
-#define BUF_SIZE 32768
+#define BUF_SIZE 2048
 #define MAX_NUM_OF_CLIENTS 10
 
 using namespace std;
