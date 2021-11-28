@@ -1,18 +1,20 @@
 #include "util.cpp"
 
 int main(int argc, char** argv){
-    /* declaration */
+/* declaration */
     char buffer[BUF_SIZE];
     char *ip_address;
     const char* delimiter = ":";
 
     int addr_length, port, client_socket, space_pos, bytes_read;
+    int received_bytes;
+    unsigned long long int size_of_file, current_bytes;
 
     string operation, argument, command, dir_name = "client_dir";
 
     fstream file;
 
-    /* pre-processing */
+/* pre-processing */
     create_directory(dir_name);
     
     client_socket = socket(DOMAIN, TYPE, PROTOCOL);
@@ -25,7 +27,7 @@ int main(int argc, char** argv){
 
     connect(client_socket, (struct sockaddr*)&address, addr_length);
 
-    /* setup username */
+/* setup username */
     cout << "input your username:" << endl;
 
     while(true){
@@ -53,7 +55,7 @@ int main(int argc, char** argv){
         // }
     }
 
-    /* execute operations */
+/* execute operations */
     while(true){
 		clear_buffer(buffer);
         
@@ -106,6 +108,56 @@ int main(int argc, char** argv){
                     send(client_socket, argument.c_str(), BUF_SIZE, 0);
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     cout << buffer << endl;
+                }
+                else{
+                    cout << "The " << argument << " doesn’t exist" << endl;
+                }
+            }
+            else{
+                cout << "Command format error" << endl;
+            }
+        }
+        else if(command == "get"){
+            argument = operation.substr(space_pos + 1);
+            // cout << "argument: " << argument << endl;
+            space_pos = argument.find(" ");
+
+            if(space_pos == string::npos){
+                // cout << "Hi, I'm get" << endl;
+                strcat(buffer, "get_req");
+                send(client_socket, buffer, BUF_SIZE, 0);
+                send(client_socket, argument.c_str(), BUF_SIZE, 0);
+                // cout << "argument: " << argument << endl;
+                clear_buffer(buffer);
+                recv(client_socket, buffer, BUF_SIZE, 0);
+                // cout << "buffer after get_req: " << buffer << endl;
+
+                if(buffer[0] == '1'){
+                    recv(client_socket, buffer, BUF_SIZE, 0);
+                    // cout << "size of file: " << buffer << endl;
+                    size_of_file = atoi(buffer);
+                    clear_buffer(buffer);
+
+                    file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
+
+                    current_bytes = 0;
+                    while(current_bytes != size_of_file){
+                        cout << "current bytes: " << current_bytes << endl;
+                        send(client_socket, command.c_str(), BUF_SIZE, 0);
+                        send(client_socket, argument.c_str(), BUF_SIZE, 0);
+
+                        received_bytes = recv(client_socket, buffer, BUF_SIZE, 0);
+                        // cout << buffer << endl;
+                        // cout << "received_bytes: " << received_bytes << endl;
+                        current_bytes += received_bytes;
+                        file.write(buffer, received_bytes);
+                        clear_buffer(buffer);
+                    }
+                    file.close();
+
+                    strcat(buffer, "get_fin");
+                    send(client_socket, buffer, BUF_SIZE, 0);
+                    cout << "get " << argument << " successfully" << endl;
                 }
                 else{
                     cout << "The " << argument << " doesn’t exist" << endl;

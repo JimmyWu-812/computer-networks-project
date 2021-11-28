@@ -4,7 +4,7 @@ server
 client_dir
 server_dir
 *.o
-client_2.cpp
-server_2.cpp
+client_*.cpp
+server_*.cpp
 test.cpp
 test

@@ -7,6 +7,8 @@ int main(int argc , char** argv){
 
     int option = true, main_socket, addr_length, new_socket;
     int child_socket[MAX_NUM_OF_CLIENTS] = {0};
+    int file_reading_pos[MAX_NUM_OF_CLIENTS] = {0};
+    int size_of_file[MAX_NUM_OF_CLIENTS] = {0};
     int fd_max, port = atoi(argv[1]), bytes_read;
 
     char buffer[BUF_SIZE];
@@ -132,8 +134,46 @@ int main(int argc , char** argv){
                         argument = "put " + argument + " successfully";
                         send(child_socket[i], argument.c_str(), BUF_SIZE, 0);
                     }
-                    else if(command == "get"){
+                    else if(command == "get_req"){
+                        recv(child_socket[i], buffer, BUF_SIZE, 0);
+                        argument = buffer;
+                        clear_buffer(buffer);
 
+                        file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
+                        
+                        if(!file.fail()){
+                            strcat(buffer, "1");
+                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                            clear_buffer(buffer);
+
+                            size_of_file[i] = file_size(dir_name + "/" + argument);
+                            strcat(buffer, to_string(size_of_file[i]).c_str());
+                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                            file_reading_pos[i] = 0;
+                            file.close();
+                        }
+                        else{
+                            strcat(buffer, "0");
+                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                        }
+                    }
+                    else if(command == "get"){
+                        recv(child_socket[i], buffer, BUF_SIZE, 0);
+                        argument = buffer;
+                        clear_buffer(buffer);
+
+                        file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
+                        file.seekg(file_reading_pos[i]);
+                        file.read(buffer, BUF_SIZE);
+
+                        file_reading_pos[i] += file.gcount();
+                        // send(child_socket[i], to_string(file.gcount()).c_str(), BUF_SIZE, 0);
+                        send(child_socket[i], buffer, file.gcount(), 0);
+                        file.close();
+                    }
+                    else if(command == "get_fin"){
+                        file_reading_pos[i] = 0;
+                        size_of_file[i] = 0;
                     }
                 }
             }  
