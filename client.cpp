@@ -6,7 +6,7 @@ int main(int argc, char** argv){
     char *ip_address;
     const char* delimiter = ":";
 
-    int addr_length, i, port, client_socket, space_pos, bytes_read;
+    int addr_length, port, client_socket, space_pos, bytes_read;
 
     string operation, argument, command, dir_name = "client_dir";
 
@@ -80,12 +80,13 @@ int main(int argc, char** argv){
                 file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
 
                 if(file.is_open()){
-                    send(client_socket, argument.c_str(), BUF_SIZE, 0);
-                    
                     while(file.peek() != EOF){
+                        send(client_socket, command.c_str(), BUF_SIZE, 0);
+                        send(client_socket, argument.c_str(), BUF_SIZE, 0);
                         file.read(buffer, BUF_SIZE);
                         // cout << buffer << endl;
                         // cout << "gcount: " << file.gcount() << endl;
+                        // cout << "gcount: "<< file.gcount() << endl;
                         bytes_read = file.gcount();
 
                         send(client_socket, to_string(bytes_read).c_str(), BUF_SIZE, 0);
@@ -95,6 +96,8 @@ int main(int argc, char** argv){
                     }
                     file.close();
 
+                    send(client_socket, "eof", BUF_SIZE, 0);
+                    send(client_socket, argument.c_str(), BUF_SIZE, 0);
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     cout << buffer << endl;
                 }
