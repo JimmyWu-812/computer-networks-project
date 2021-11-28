@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv){
     /* declaration */
-    char buffer[BUF_SIZE], ch;
+    char buffer[BUF_SIZE];
     char *ip_address;
     const char* delimiter = ":";
 
@@ -27,13 +27,15 @@ int main(int argc, char** argv){
 
     /* setup username */
     cout << "input your username:" << endl;
+
     while(true){
 		clear_buffer(buffer);
 
         getline(cin, argument);
         // cout << "argument: " << argument << endl;
 
-        send(client_socket, "usr", BUF_SIZE, 0);
+        strcat(buffer, "usr");
+        send(client_socket, buffer, BUF_SIZE, 0);
         send(client_socket, argument.c_str(), BUF_SIZE, 0);
 
         recv(client_socket, buffer, BUF_SIZE, 0);
@@ -46,6 +48,9 @@ int main(int argc, char** argv){
             cout << "connect successfully" << endl;
             break;
         }
+        // else{
+        //     cout << "error" << endl;
+        // }
     }
 
     /* execute operations */
@@ -79,14 +84,13 @@ int main(int argc, char** argv){
                 // cout << "Hi, I'm put" << endl;
                 file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
 
-                if(file.is_open()){
+                if(!file.fail()){
                     while(file.peek() != EOF){
                         send(client_socket, command.c_str(), BUF_SIZE, 0);
                         send(client_socket, argument.c_str(), BUF_SIZE, 0);
                         file.read(buffer, BUF_SIZE);
                         // cout << buffer << endl;
                         // cout << "gcount: " << file.gcount() << endl;
-                        // cout << "gcount: "<< file.gcount() << endl;
                         bytes_read = file.gcount();
 
                         send(client_socket, to_string(bytes_read).c_str(), BUF_SIZE, 0);
@@ -95,8 +99,9 @@ int main(int argc, char** argv){
                         clear_buffer(buffer);
                     }
                     file.close();
-
-                    send(client_socket, "eof", BUF_SIZE, 0);
+                    
+                    strcat(buffer, "eof");
+                    send(client_socket, buffer, BUF_SIZE, 0);
                     send(client_socket, argument.c_str(), BUF_SIZE, 0);
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     cout << buffer << endl;
