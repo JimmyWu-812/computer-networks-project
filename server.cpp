@@ -2,7 +2,6 @@
 #include <set>
 
 int main(int argc , char** argv){
-    /* declaration */
     bool flag;
 
     int option = true, main_socket, addr_length, new_socket;
@@ -21,7 +20,6 @@ int main(int argc , char** argv){
     const path root_dir{dir_name};
     fd_set readfds;
 
-    /* pre-processing */
     create_directory(dir_name);
          
     main_socket = socket(DOMAIN, TYPE, PROTOCOL);
@@ -122,7 +120,7 @@ int main(int argc , char** argv){
                         put_file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
                         // cout << buffer << endl;
-                        put_file.write(buffer, bytes_read);
+                        put_file.write(buffer, BUF_SIZE);
 
                         put_file.close();
                     }
@@ -163,7 +161,6 @@ int main(int argc , char** argv){
                         // cout << get_file[i].gcount() << endl;
                         // cout << "buffer: " << buffer << endl;
 
-                        // send(child_socket[i], to_string(get_file[i].gcount()).c_str(), BUF_SIZE, 0);
                         send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                     }
                     else if(command == "get_fin"){
@@ -174,9 +171,9 @@ int main(int argc , char** argv){
                         send(child_socket[i], argument.c_str(), BUF_SIZE, MSG_NOSIGNAL);
                         get_file[i].close();
                     }
-                    // else{
-                    //     cout << "error";
-                    // }
+                    else{
+                        cout << "error " << command << endl;
+                    }
                 }
             }  
         }

@@ -1,12 +1,11 @@
 #include "util.cpp"
 
 int main(int argc, char** argv){
-/* declaration */
     char buffer[BUF_SIZE];
     char *ip_address;
     const char* delimiter = ":";
 
-    int addr_length, port, client_socket, space_pos, bytes_read;
+    int addr_length, port, client_socket, space_pos_1, space_pos_2, bytes_read;
     int received_bytes;
     unsigned long long int size_of_file, current_bytes;
 
@@ -14,7 +13,6 @@ int main(int argc, char** argv){
 
     fstream file;
 
-/* pre-processing */
     create_directory(dir_name);
     
     client_socket = socket(DOMAIN, TYPE, PROTOCOL);
@@ -27,7 +25,6 @@ int main(int argc, char** argv){
 
     connect(client_socket, (struct sockaddr*)&address, addr_length);
 
-/* setup username */
     cout << "input your username:" << endl;
 
     while(true){
@@ -55,19 +52,18 @@ int main(int argc, char** argv){
         // }
     }
 
-/* execute operations */
     while(true){
 		clear_buffer(buffer);
         
         getline(cin, operation);
         // cout << "operation: " << operation << endl;
 
-        space_pos = operation.find(" ");
-        command = operation.substr(0, space_pos);
+        space_pos_1 = operation.find(" ");
+        command = operation.substr(0, space_pos_1);
         // cout << "command: " << command << endl;
 
         if(command == "ls"){
-            if(space_pos == string::npos){
+            if(space_pos_1 == string::npos){
                 // cout << "Hi, I'm ls" << endl;
                 send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
                 recv(client_socket, buffer, BUF_SIZE, 0);
@@ -78,11 +74,11 @@ int main(int argc, char** argv){
             }
         }
         else if(command == "put"){
-            argument = operation.substr(space_pos + 1);
+            argument = operation.substr(space_pos_1 + 1);
             // cout << "argument: " << argument << endl;
-            space_pos = argument.find(" ");
+            space_pos_2 = argument.find(" ");
 
-            if((argument != command) && (space_pos == string::npos)){
+            if((space_pos_1 != string::npos) && (space_pos_2 == string::npos)){
                 // cout << "Hi, I'm put" << endl;
                 file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
 
@@ -118,11 +114,11 @@ int main(int argc, char** argv){
             }
         }
         else if(command == "get"){
-            argument = operation.substr(space_pos + 1);
+            argument = operation.substr(space_pos_1 + 1);
             // cout << "argument: " << argument << endl;
-            space_pos = argument.find(" ");
+            space_pos_2 = argument.find(" ");
 
-            if((argument != command) && (space_pos == string::npos)){
+            if((space_pos_1 != string::npos) && (space_pos_2 == string::npos)){
                 // cout << "Hi, I'm get" << endl;
                 strcat(buffer, "get_req");
                 send(client_socket, buffer, BUF_SIZE, MSG_NOSIGNAL);
@@ -140,49 +136,23 @@ int main(int argc, char** argv){
 
                     file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
 
-                    // for(unsigned long long int i=0; i<=size_of_file/BUF_SIZE; i++){
-                    //     send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
-                    //     send(client_socket, argument.c_str(), BUF_SIZE, MSG_NOSIGNAL);
-                    // }
-                    // for(unsigned long long int i=0; i<size_of_file/BUF_SIZE; i++){
-                    //     recv(client_socket, buffer, BUF_SIZE, 0);
-                    //     file.write(buffer, BUF_SIZE);
-                    // }
-                    // // file.close();
-
-                    // recv(client_socket, buffer, BUF_SIZE, 0);
-                    // // file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
-                    // file.write(buffer, size_of_file%BUF_SIZE);
-                    // file.close();
-
-                    // current_bytes = 0;
-                    // cout << size_of_file << endl;
-                    // cout << (size_of_file/BUF_SIZE) << endl;
                     for(unsigned long long int i=0; i<(size_of_file/BUF_SIZE); i++){
                         // cout << "current bytes: " << current_bytes << endl;
                         send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
 
-                        // recv(client_socket, buffer, BUF_SIZE, 0);
-                        // received_bytes = atoi(buffer);
-
-                        // clear_buffer(buffer);
                         recv(client_socket, buffer, BUF_SIZE, 0);
                         // cout << buffer << endl;
                         // cout << "received_bytes: " << received_bytes << endl;
-                        // current_bytes += BUF_SIZE;
                         file.write(buffer, BUF_SIZE);
-                        // clear_buffer(buffer);
                         // cout << (current_bytes == size_of_file) << endl;
                     }
                     send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
 
-                    // clear_buffer(buffer);
+                    clear_buffer(buffer);
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     // cout << buffer << endl;
                     // cout << "received_bytes: " << received_bytes << endl;
-                    // current_bytes += BUF_SIZE;
                     file.write(buffer, size_of_file%BUF_SIZE);
-                    // clear_buffer(buffer);
                     // cout << (current_bytes == size_of_file) << endl;
                     file.close();
 
