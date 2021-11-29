@@ -81,7 +81,7 @@ int main(int argc , char** argv){
                         for(int j=0; j<MAX_NUM_OF_CLIENTS; j++){
                             if(username[j] == argument){
                                 strcat(buffer, "0");
-                                send(child_socket[i], buffer, BUF_SIZE, 0);
+                                send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                                 flag = false;
                                 break;
                             }
@@ -92,7 +92,7 @@ int main(int argc , char** argv){
                             // cout << "connect successfully: ";
                             // cout << child_socket[i] << " " << username[i] << endl;
                             strcat(buffer, "1");
-                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                            send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                         }
                     }
                     else if(command == "ls"){
@@ -102,7 +102,7 @@ int main(int argc , char** argv){
                         }
                         // cout << "buffer in ls: " << buffer;
 
-                        send(child_socket[i], buffer, BUF_SIZE, 0);
+                        send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                     }
                     else if(command == "put"){
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
@@ -130,42 +130,52 @@ int main(int argc , char** argv){
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
                         argument = buffer;
                         argument = "put " + argument + " successfully";
-                        send(child_socket[i], argument.c_str(), BUF_SIZE, 0);
+                        send(child_socket[i], argument.c_str(), BUF_SIZE, MSG_NOSIGNAL);
                     }
                     else if(command == "get_req"){
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
                         argument = buffer;
+                        // cout << "argument: " << argument << endl;
                         clear_buffer(buffer);
 
                         get_file[i].open(dir_name + "/" + argument, fstream::in|fstream::binary);
+                        // cout << get_file[i].fail() << endl;
                         
-                        if(!put_file.fail()){
+                        if(!get_file[i].fail()){
                             strcat(buffer, "1");
-                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                            send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
+                            // cout << buffer << endl;
                             clear_buffer(buffer);
 
                             strcat(buffer, to_string(file_size(dir_name + "/" + argument)).c_str());
-                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                            send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                         }
                         else{
                             strcat(buffer, "0");
-                            send(child_socket[i], buffer, BUF_SIZE, 0);
+                            send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
+                            // cout << buffer << endl;
                         }
                     }
                     else if(command == "get"){
-                        recv(child_socket[i], buffer, BUF_SIZE, 0);
-                        argument = buffer;
                         clear_buffer(buffer);
 
-                        get_file[i].open(dir_name + "/" + argument, fstream::in|fstream::binary);
                         get_file[i].read(buffer, BUF_SIZE);
+                        // cout << "buffer: " << buffer << endl;
 
                         // send(child_socket[i], to_string(file.gcount()).c_str(), BUF_SIZE, 0);
-                        send(child_socket[i], buffer, get_file[i].gcount(), 0);
+                        send(child_socket[i], buffer, get_file[i].gcount(), MSG_NOSIGNAL);
                     }
                     else if(command == "get_fin"){
+                        // cout << command << endl;
+                        recv(child_socket[i], buffer, BUF_SIZE, 0);
+                        argument = buffer;
+                        argument = "get " + argument + " successfully";
+                        send(child_socket[i], argument.c_str(), BUF_SIZE, MSG_NOSIGNAL);
                         get_file[i].close();
                     }
+                    // else{
+                    //     cout << "error";
+                    // }
                 }
             }  
         }
