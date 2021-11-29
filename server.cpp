@@ -126,7 +126,7 @@ int main(int argc , char** argv){
 
                         put_file.close();
                     }
-                    else if(command == "eof"){
+                    else if(command == "put_fin"){
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
                         argument = buffer;
                         argument = "put " + argument + " successfully";
@@ -160,10 +160,11 @@ int main(int argc , char** argv){
                         clear_buffer(buffer);
 
                         get_file[i].read(buffer, BUF_SIZE);
+                        // cout << get_file[i].gcount() << endl;
                         // cout << "buffer: " << buffer << endl;
 
-                        // send(child_socket[i], to_string(file.gcount()).c_str(), BUF_SIZE, 0);
-                        send(child_socket[i], buffer, get_file[i].gcount(), MSG_NOSIGNAL);
+                        send(child_socket[i], to_string(get_file[i].gcount()).c_str(), BUF_SIZE, 0);
+                        send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                     }
                     else if(command == "get_fin"){
                         // cout << command << endl;

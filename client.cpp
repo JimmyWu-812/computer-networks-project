@@ -102,7 +102,7 @@ int main(int argc, char** argv){
                     }
                     file.close();
                     
-                    strcat(buffer, "eof");
+                    strcat(buffer, "put_fin");
                     send(client_socket, buffer, BUF_SIZE, MSG_NOSIGNAL);
                     clear_buffer(buffer);
                     send(client_socket, argument.c_str(), BUF_SIZE, MSG_NOSIGNAL);
@@ -156,17 +156,22 @@ int main(int argc, char** argv){
                     // file.close();
 
                     current_bytes = 0;
-                    while(current_bytes != size_of_file){
+                    // cout << size_of_file << endl;
+                    while(current_bytes < size_of_file){
                         // cout << "current bytes: " << current_bytes << endl;
                         send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
 
-                        received_bytes = recv(client_socket, buffer, BUF_SIZE, 0);
+                        recv(client_socket, buffer, BUF_SIZE, 0);
+                        received_bytes = atoi(buffer);
+
+                        clear_buffer(buffer);
+                        recv(client_socket, buffer, BUF_SIZE, 0);
                         // cout << buffer << endl;
-                        if(received_bytes != BUF_SIZE)
-                            cout << "received_bytes: " << received_bytes << endl;
+                        // cout << "received_bytes: " << received_bytes << endl;
                         current_bytes += received_bytes;
                         file.write(buffer, received_bytes);
                         clear_buffer(buffer);
+                        // cout << (current_bytes == size_of_file) << endl;
                     }
                     file.close();
 
@@ -177,7 +182,6 @@ int main(int argc, char** argv){
                     clear_buffer(buffer);
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     cout << buffer << endl;
-                    // cout << "get " << argument << " successfully" << endl;
                 }
                 else{
                     cout << "The " << argument << " doesn’t exist" << endl;
