@@ -163,7 +163,7 @@ int main(int argc , char** argv){
                         // cout << get_file[i].gcount() << endl;
                         // cout << "buffer: " << buffer << endl;
 
-                        send(child_socket[i], to_string(get_file[i].gcount()).c_str(), BUF_SIZE, 0);
+                        // send(child_socket[i], to_string(get_file[i].gcount()).c_str(), BUF_SIZE, 0);
                         send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
                     }
                     else if(command == "get_fin"){

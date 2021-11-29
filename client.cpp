@@ -135,7 +135,7 @@ int main(int argc, char** argv){
                 if(buffer[0] == '1'){
                     recv(client_socket, buffer, BUF_SIZE, 0);
                     // cout << "size of file: " << buffer << endl;
-                    size_of_file = atoi(buffer);
+                    size_of_file = atoll(buffer);
                     clear_buffer(buffer);
 
                     file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
@@ -155,24 +155,35 @@ int main(int argc, char** argv){
                     // file.write(buffer, size_of_file%BUF_SIZE);
                     // file.close();
 
-                    current_bytes = 0;
+                    // current_bytes = 0;
                     // cout << size_of_file << endl;
-                    while(current_bytes < size_of_file){
+                    // cout << (size_of_file/BUF_SIZE) << endl;
+                    for(unsigned long long int i=0; i<(size_of_file/BUF_SIZE); i++){
                         // cout << "current bytes: " << current_bytes << endl;
                         send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
 
-                        recv(client_socket, buffer, BUF_SIZE, 0);
-                        received_bytes = atoi(buffer);
+                        // recv(client_socket, buffer, BUF_SIZE, 0);
+                        // received_bytes = atoi(buffer);
 
-                        clear_buffer(buffer);
+                        // clear_buffer(buffer);
                         recv(client_socket, buffer, BUF_SIZE, 0);
                         // cout << buffer << endl;
                         // cout << "received_bytes: " << received_bytes << endl;
-                        current_bytes += received_bytes;
-                        file.write(buffer, received_bytes);
-                        clear_buffer(buffer);
+                        // current_bytes += BUF_SIZE;
+                        file.write(buffer, BUF_SIZE);
+                        // clear_buffer(buffer);
                         // cout << (current_bytes == size_of_file) << endl;
                     }
+                    send(client_socket, command.c_str(), BUF_SIZE, MSG_NOSIGNAL);
+
+                    // clear_buffer(buffer);
+                    recv(client_socket, buffer, BUF_SIZE, 0);
+                    // cout << buffer << endl;
+                    // cout << "received_bytes: " << received_bytes << endl;
+                    // current_bytes += BUF_SIZE;
+                    file.write(buffer, size_of_file%BUF_SIZE);
+                    // clear_buffer(buffer);
+                    // cout << (current_bytes == size_of_file) << endl;
                     file.close();
 
                     clear_buffer(buffer);
