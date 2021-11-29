@@ -7,8 +7,6 @@ int main(int argc , char** argv){
 
     int option = true, main_socket, addr_length, new_socket;
     int child_socket[MAX_NUM_OF_CLIENTS] = {0};
-    unsigned long long int file_reading_pos[MAX_NUM_OF_CLIENTS] = {0};
-    unsigned long long int size_of_file[MAX_NUM_OF_CLIENTS] = {0};
     int fd_max, port = atoi(argv[1]), bytes_read;
 
     char buffer[BUF_SIZE];
@@ -16,7 +14,7 @@ int main(int argc , char** argv){
     string command, argument, username[MAX_NUM_OF_CLIENTS] = {""};
     string dir_name = "server_dir";
 
-    fstream file;
+    fstream put_file, get_file[MAX_NUM_OF_CLIENTS];
 
     set<path> filenames;
 
@@ -121,12 +119,12 @@ int main(int argc , char** argv){
 
                         clear_buffer(buffer);
 
-                        file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
+                        put_file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
                         // cout << buffer << endl;
-                        file.write(buffer, bytes_read);
+                        put_file.write(buffer, bytes_read);
 
-                        file.close();
+                        put_file.close();
                     }
                     else if(command == "eof"){
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
@@ -139,18 +137,15 @@ int main(int argc , char** argv){
                         argument = buffer;
                         clear_buffer(buffer);
 
-                        file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
+                        get_file[i].open(dir_name + "/" + argument, fstream::in|fstream::binary);
                         
-                        if(!file.fail()){
+                        if(!put_file.fail()){
                             strcat(buffer, "1");
                             send(child_socket[i], buffer, BUF_SIZE, 0);
                             clear_buffer(buffer);
 
-                            size_of_file[i] = file_size(dir_name + "/" + argument);
-                            strcat(buffer, to_string(size_of_file[i]).c_str());
+                            strcat(buffer, to_string(file_size(dir_name + "/" + argument)).c_str());
                             send(child_socket[i], buffer, BUF_SIZE, 0);
-                            file_reading_pos[i] = 0;
-                            file.close();
                         }
                         else{
                             strcat(buffer, "0");
@@ -162,18 +157,14 @@ int main(int argc , char** argv){
                         argument = buffer;
                         clear_buffer(buffer);
 
-                        file.open(dir_name + "/" + argument, fstream::in|fstream::binary);
-                        file.seekg(file_reading_pos[i]);
-                        file.read(buffer, BUF_SIZE);
+                        get_file[i].open(dir_name + "/" + argument, fstream::in|fstream::binary);
+                        get_file[i].read(buffer, BUF_SIZE);
 
-                        file_reading_pos[i] += file.gcount();
                         // send(child_socket[i], to_string(file.gcount()).c_str(), BUF_SIZE, 0);
-                        send(child_socket[i], buffer, file.gcount(), 0);
-                        file.close();
+                        send(child_socket[i], buffer, get_file[i].gcount(), 0);
                     }
                     else if(command == "get_fin"){
-                        file_reading_pos[i] = 0;
-                        size_of_file[i] = 0;
+                        get_file[i].close();
                     }
                 }
             }  
