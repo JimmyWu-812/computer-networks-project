@@ -171,9 +171,9 @@ int main(int argc , char** argv){
                         send(child_socket[i], argument.c_str(), BUF_SIZE, MSG_NOSIGNAL);
                         get_file[i].close();
                     }
-                    else{
-                        cout << "error " << command << endl;
-                    }
+                    // else{
+                    //     cout << "error " << command << endl;
+                    // }
                 }
             }  
         }
