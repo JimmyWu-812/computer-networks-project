@@ -120,7 +120,7 @@ int main(int argc , char** argv){
                         put_file.open(dir_name + "/" + argument, fstream::out|fstream::binary|fstream::app);
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
                         // cout << buffer << endl;
-                        put_file.write(buffer, BUF_SIZE);
+                        put_file.write(buffer, bytes_read);
 
                         put_file.close();
                     }
