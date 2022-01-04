@@ -106,7 +106,7 @@ int main(int argc, char** argv){
                     cout << buffer << endl;
                 }
                 else{
-                    cout << "The " << argument << " doesn’t exist" << endl;
+                    cout << "The " << argument << " doesn't exist" << endl;
                 }
             }
             else{
