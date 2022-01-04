@@ -12,6 +12,9 @@ int main(int argc , char** argv){
 
     string command, argument, username[MAX_NUM_OF_CLIENTS] = {""};
     string dir_name = "server_dir";
+    string res, response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ";
+    cout << response << endl;
+    string key;
 
     fstream put_file, get_file[MAX_NUM_OF_CLIENTS];
 
@@ -40,7 +43,7 @@ int main(int argc , char** argv){
 
         if(FD_ISSET(main_socket, &readfds)){  
             new_socket = accept(main_socket, (struct sockaddr*)&address, (socklen_t*)&addr_length);
-            // cout << "new_socket: " << new_socket << endl;
+            cout << "new_socket: " << new_socket << endl;
             for(int i=0; i<MAX_NUM_OF_CLIENTS; i++){  
                 if(child_socket[i] == 0){  
                     child_socket[i] = new_socket;  
@@ -67,7 +70,14 @@ int main(int argc , char** argv){
                 else{
                     command = buffer;
                     clear_buffer(buffer);
-                    // cout << "command: " << command << endl;
+                    cout << "command: " << command << endl;
+
+                    cin >> key;
+                    res = response + key + "\r\n\r\n";
+                    cout << res << endl;
+                    strcat(buffer, res.c_str());
+                    send(child_socket[i], buffer, BUF_SIZE, MSG_NOSIGNAL);
+                    cout << "send finish" << endl;
 
                     if(command == "usr"){
                         recv(child_socket[i], buffer, BUF_SIZE, 0);
