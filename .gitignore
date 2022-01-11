@@ -8,3 +8,6 @@ client_*.cpp
 server_*.cpp
 test.cpp
 test
+sha1.py
+sha1.cpp
+sha1
